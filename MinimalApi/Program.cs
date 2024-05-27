@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.RegisterServices();
 
 var app = builder.Build();
-
+app.UseCors("AllowAll");
 app.Use(async (ctx, next) =>
 {
     try
@@ -25,7 +25,8 @@ app.Use(async (ctx, next) =>
 });
 
 app.UseHttpsRedirection();
-
+app.UseOptions();
 app.RegisterEndpointDefinitions();
+
 
 app.Run();

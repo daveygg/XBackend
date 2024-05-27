@@ -23,6 +23,15 @@ public static class ApiExtensions
             assembly.RegisterServicesFromAssemblies(typeof(DeletePost).Assembly);
             assembly.RegisterServicesFromAssemblies(typeof(UpdatePost).Assembly);
         });
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll", builder =>
+            {
+                builder.AllowAnyOrigin()
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+            });
+        });
     }
 
     public static void RegisterEndpointDefinitions(this WebApplication app)

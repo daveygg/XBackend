@@ -12,5 +12,9 @@ public class Post
     public string? Content { get; set; }
     public DateTime DateCreated { get; set; }
     public DateTime LastModified { get; set; }
+    public string? AvatarUrl { get; set; }
+    public string? ImageUrl { get; set; }
+    public string? UserName { get; set; }
+    public string? DisplayName { get; set; }
 }
 
