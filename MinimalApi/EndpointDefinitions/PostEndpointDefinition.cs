@@ -13,6 +13,7 @@ public class PostEndpointDefinition : IEndpointDefinition
     public void RegisterEndpoints(WebApplication app)
     {
         var posts = app.MapGroup("/api/posts");
+        var posts2 = app.MapGroup("/api/posts2");
 
         posts.MapGet("/{id}", GetPostById)
             .WithName("GetPostById");
@@ -26,6 +27,11 @@ public class PostEndpointDefinition : IEndpointDefinition
             .AddEndpointFilter<PostValidationFilter>();
         posts.MapDelete("/{id}", DeletePost)
             .WithName("DeletePost");
+
+        posts2.MapPost("/", CreatePost2)
+            .WithName("CreatePost2");
+        posts2.MapPost("/media", CreatePost2)
+            .WithName("UploadMedia");
     }
     private async Task<IResult> GetPostById(IMediator mediator, int id)
     {
@@ -60,5 +66,26 @@ public class PostEndpointDefinition : IEndpointDefinition
         var deletePost = new DeletePost { PostId = id };
         await mediator.Send(deletePost);
         return TypedResults.NoContent();
+    }
+    private async Task<IResult> CreatePost2(IMediator mediator, Post2 post, string mediaPath)
+    {
+        var createPost = new CreatePost2
+        {
+            PostContent = post.Content,
+            MediaPath = mediaPath
+        };
+        var createdPost = await mediator.Send(createPost);
+        return Results.CreatedAtRoute("GetPostById", new { createdPost.Id }, createdPost);
+    }
+    private async Task<IResult> UploadMedia(IMediator mediator, IFormFile media)
+    {
+        var uploadMedia = new UploadMedia
+        {
+            Media = media
+        };
+
+        var mediaPath = await mediator.Send(media);
+
+        return TypedResults.Ok(mediaPath);
     }
 }

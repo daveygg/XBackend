@@ -9,7 +9,7 @@ public class PostRepository : IPostRepository
 {
     private readonly SocialDbContext _ctx;
     //create transient fault handler
-    private readonly RetryPolicy _tfh = new RetryPolicy<SqlDatabaseTransientErrorDetectionStrategy>(RetryStrategy.DefaultExponential);
+    private readonly RetryPolicy _retryHandler = new RetryPolicy<SqlDatabaseTransientErrorDetectionStrategy>(RetryStrategy.DefaultExponential);
     public PostRepository(SocialDbContext ctx)
     {
         _ctx = ctx;
@@ -17,23 +17,27 @@ public class PostRepository : IPostRepository
 
     public async Task<Post> UpdatePost(string updatedContent, int postId)
     {
-        return await _tfh.ExecuteAsync<Post>(() => _UpdatePost(updatedContent, postId));
+        return await _retryHandler.ExecuteAsync<Post>(() => _UpdatePost(updatedContent, postId));
     }
     public async Task DeletePost(int postId)
     {
-        await _tfh.ExecuteAsync(() => _DeletePost(postId));
+        await _retryHandler.ExecuteAsync(() => _DeletePost(postId));
     }
     public async Task<Post> CreatePost(Post toCreate)
     {
-        return await _tfh.ExecuteAsync<Post>(() => _CreatePost(toCreate));
+        return await _retryHandler.ExecuteAsync<Post>(() => _CreatePost(toCreate));
+    }
+    public async Task<Post2> CreatePost2(Post2 toCreate)
+    {
+        return await _retryHandler.ExecuteAsync<Post2>(() => _CreatePost2(toCreate));
     }
     public async Task<Post> GetPostById(int postId)
     {
-        return await _tfh.ExecuteAsync(() => _GetPostById(postId));
+        return await _retryHandler.ExecuteAsync(() => _GetPostById(postId));
     }
     public async Task<ICollection<Post>> GetAllPosts()
     {
-        return await _tfh.ExecuteAsync<ICollection<Post>>(_GetAllPosts);
+        return await _retryHandler.ExecuteAsync<ICollection<Post>>(_GetAllPosts);
     }
 
     private async Task<Post> _GetPostById(int postId)
@@ -45,6 +49,14 @@ public class PostRepository : IPostRepository
         toCreate.DateCreated = DateTime.Now;
         toCreate.LastModified = DateTime.Now;
         _ctx.Posts.Add(toCreate);
+        await _ctx.SaveChangesAsync();
+        return toCreate;
+    }
+    private async Task<Post2> _CreatePost2(Post2 toCreate)
+    {
+        toCreate.DateCreated = DateTime.Now;
+        toCreate.LastModified = DateTime.Now;
+        _ctx.Posts2.Add(toCreate);
         await _ctx.SaveChangesAsync();
         return toCreate;
     }

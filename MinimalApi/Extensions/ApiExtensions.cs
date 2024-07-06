@@ -5,6 +5,7 @@ using DataAccess.Repositories;
 using DataAccess;
 using Microsoft.EntityFrameworkCore;
 using MinimalApi.Abstractions;
+using Media;
 
 namespace MinimalApi.Extensions;
 
@@ -15,6 +16,7 @@ public static class ApiExtensions
         var cs = builder.Configuration.GetConnectionString("Default");
         builder.Services.AddDbContext<SocialDbContext>(opt => opt.UseSqlServer(cs));
         builder.Services.AddScoped<IPostRepository, PostRepository>();
+        builder.Services.AddScoped<IMediaHelper, MediaHelper>();
         builder.Services.AddMediatR(assembly =>
         {
             assembly.RegisterServicesFromAssemblies(typeof(CreatePost).Assembly);

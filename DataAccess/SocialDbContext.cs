@@ -14,5 +14,6 @@ public class SocialDbContext : DbContext
     {        
     }
     public DbSet<Post> Posts { get; set; }
+    public DbSet<Post2> Posts2 { get; set; }
 }
 
