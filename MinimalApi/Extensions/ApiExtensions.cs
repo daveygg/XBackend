@@ -13,8 +13,10 @@ public static class ApiExtensions
 {
     public static void RegisterServices(this WebApplicationBuilder builder)
     {
-        var cs = builder.Configuration.GetConnectionString("Default");
-        builder.Services.AddDbContext<SocialDbContext>(opt => opt.UseSqlServer(cs));
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
+        builder.Services.AddDbContext<SocialDbContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
         builder.Services.AddScoped<IPostRepository, PostRepository>();
         builder.Services.AddScoped<IMediaHelper, MediaHelper>();
         builder.Services.AddMediatR(assembly =>
