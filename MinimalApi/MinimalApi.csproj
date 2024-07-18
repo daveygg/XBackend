@@ -28,7 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
-    <ProjectReference Include="..\MediaHelper\MediaHelper.csproj" />
+    <ProjectReference Include="..\MediaHelper\BlobInteraction.csproj" />
   </ItemGroup>
 
 </Project>

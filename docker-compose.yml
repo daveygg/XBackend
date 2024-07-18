@@ -1,24 +1,29 @@
 version: '3.9'
 
+volumes:
+  storage:
+
 services:
-  
+
   minimalapi:
     image: ${DOCKER_REGISTRY-}minimalapi
     build:
       context: .
       dockerfile: MinimalApi/Dockerfile
     ports:
-    - "5000:5000"
-    - "5001:5001" 
-  
+      - "5000:5000"
+      - "5001:5001"
+    volumes:
+      - storage:/storage:rw
+
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite:latest
     container_name: blob-storage
     ports:
-      - "10000"
+      - "10010:10010"
     volumes:
-      - ./azurite:/workspace
-    restart: always
+      - ./.containers/blob_storage/data:/data
+    command: "azurite-blob --blobPort 10010 --blobHost 0.0.0.0 -l /data"
 
   api.database:
     image: postgres:latest
@@ -28,6 +33,6 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     volumes:
-      - ./.containers/posts-db:/var/lib/postgressql/data
+      - ./.containers/posts-db:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - "5432:5432"

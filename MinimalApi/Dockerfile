@@ -25,5 +25,6 @@ RUN dotnet publish "./MinimalApi.csproj" -c $BUILD_CONFIGURATION -o /app/publish
 
 FROM base AS final
 WORKDIR /app
+RUN mkdir /app/storage
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "MinimalApi.dll"]

@@ -5,6 +5,7 @@ using Domain.Models;
 using MediatR;
 using MinimalApi.EndpointDefinitions;
 using MinimalApi.Extensions;
+using MinimalApi.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,18 +14,7 @@ builder.RegisterServices();
 var app = builder.Build();
 
 app.UseCors("AllowAll");
-app.Use(async (ctx, next) =>
-{
-    try
-    {
-        await next();
-    }
-    catch 
-    {
-        ctx.Response.StatusCode = 500;
-        await ctx.Response.WriteAsync("An error occured");
-    }
-});
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 app.UseOptions();
 
@@ -36,6 +26,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
     app.ApplyMigrations();
 }
+app.UseAntiforgery();
 
 app.RegisterEndpointDefinitions();
 

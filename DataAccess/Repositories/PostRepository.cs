@@ -29,7 +29,7 @@ public class PostRepository : IPostRepository
     }
     public async Task<Post2> CreatePost2(Post2 toCreate)
     {
-        return await _retryHandler.ExecuteAsync<Post2>(() => _CreatePost2(toCreate));
+        return await _CreatePost2(toCreate);
     }
     public async Task<Post> GetPostById(int postId)
     {
@@ -39,6 +39,10 @@ public class PostRepository : IPostRepository
     {
         return await _retryHandler.ExecuteAsync<ICollection<Post>>(_GetAllPosts);
     }
+    public async Task<ICollection<Post2>> GetAllPosts2()
+    {
+        return await _retryHandler.ExecuteAsync<ICollection<Post2>>(_GetAllPosts2);
+    }    
 
     private async Task<Post> _GetPostById(int postId)
     {
@@ -72,6 +76,12 @@ public class PostRepository : IPostRepository
     {
         return await _ctx.Posts.ToListAsync();
     }
+
+    private async Task<ICollection<Post2>> _GetAllPosts2()
+    {
+        return await _ctx.Posts2.ToListAsync();
+    }
+
     private async Task<Post> _UpdatePost(string updatedContent, int postId)
     {
         var post = await _ctx.Posts.FirstOrDefaultAsync(p => p.Id == postId);

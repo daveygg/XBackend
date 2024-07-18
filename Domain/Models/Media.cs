@@ -1,12 +1,14 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Domain.Models;
-public class SupplementalMedia
+public class Media
 {
-    public int id { get; set; }
+    public int Id { get; set; }
+    public IFormFile MediaContent { get; set; }
     public string FilePath { get; set; }
 }

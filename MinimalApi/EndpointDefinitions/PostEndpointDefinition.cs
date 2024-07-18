@@ -2,7 +2,8 @@
 using Application.Posts.Queries;
 using Domain.Models;
 using MediatR;
-using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Mvc;
 using MinimalApi.Abstractions;
 using MinimalApi.Filters;
 
@@ -29,9 +30,11 @@ public class PostEndpointDefinition : IEndpointDefinition
             .WithName("DeletePost");
 
         posts2.MapPost("/", CreatePost2)
-            .WithName("CreatePost2");
-        posts2.MapPost("/media", CreatePost2)
-            .WithName("UploadMedia");
+            .WithName("CreatePost2")
+            .DisableAntiforgery();
+        posts2.MapGet("/", GetAllPosts2)
+            .WithName("GetAllPosts2");
+        
     }
     private async Task<IResult> GetPostById(IMediator mediator, int id)
     {
@@ -67,25 +70,21 @@ public class PostEndpointDefinition : IEndpointDefinition
         await mediator.Send(deletePost);
         return TypedResults.NoContent();
     }
-    private async Task<IResult> CreatePost2(IMediator mediator, Post2 post, string mediaPath)
+    private async Task<IResult> CreatePost2(IMediator mediator, [FromForm]Post2 post, IFormFile media)
     {
         var createPost = new CreatePost2
         {
             PostContent = post.Content,
-            MediaPath = mediaPath
+            Media = media
         };
         var createdPost = await mediator.Send(createPost);
         return Results.CreatedAtRoute("GetPostById", new { createdPost.Id }, createdPost);
     }
-    private async Task<IResult> UploadMedia(IMediator mediator, IFormFile media)
+
+    private async Task<IResult> GetAllPosts2(IMediator mediator)
     {
-        var uploadMedia = new UploadMedia
-        {
-            Media = media
-        };
-
-        var mediaPath = await mediator.Send(media);
-
-        return TypedResults.Ok(mediaPath);
+        var getAllPosts2 = new GetAllPosts2();
+        var posts = await mediator.Send(getAllPosts2);
+        return TypedResults.Ok(posts);
     }
 }

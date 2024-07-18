@@ -10,6 +10,7 @@ namespace Application.Abstractions;
 public interface IPostRepository
 {
     Task<ICollection<Post>> GetAllPosts();
+    Task<ICollection<Post2>> GetAllPosts2();
     Task<Post> GetPostById(int postId);
     Task<Post> CreatePost(Post toCreate);
     Task<Post2> CreatePost2(Post2 toCreate);

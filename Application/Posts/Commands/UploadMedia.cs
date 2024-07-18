@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http;
+using Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
