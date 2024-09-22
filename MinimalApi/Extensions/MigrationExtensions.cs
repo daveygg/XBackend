@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
-using DataAccess;
+using Infrastructure;
 
 namespace MinimalApi.Extensions;
 
