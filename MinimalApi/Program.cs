@@ -1,6 +1,5 @@
 using Application.Posts.Commands;
 using Application.Posts.Queries;
-using DataAccess;
 using Domain.Models;
 using MediatR;
 using MinimalApi.EndpointDefinitions;
@@ -14,11 +13,10 @@ builder.RegisterServices();
 var app = builder.Build();
 
 app.UseCors("AllowAll");
-app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 app.UseOptions();
 
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+//AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 if (app.Environment.IsDevelopment())
 {
@@ -26,8 +24,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
     app.ApplyMigrations();
 }
-app.UseAntiforgery();
 
 app.RegisterEndpointDefinitions();
+
+app.MapIdentityApi<User>();
 
 app.Run();

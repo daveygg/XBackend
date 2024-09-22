@@ -1,11 +1,13 @@
 ﻿using Application.Abstractions;
 using Application.Posts.Commands;
 using Application.Posts.Queries;
-using DataAccess.Repositories;
-using DataAccess;
+using Infrastructure.Repositories;
+using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using MinimalApi.Abstractions;
-using Infrastructure;
+using Microsoft.AspNetCore.Identity;
+using Domain.Models;
+using Infrastructure.BlobStorage;
 using Azure.Storage.Blobs;
 
 namespace MinimalApi.Extensions;
@@ -14,23 +16,32 @@ public static class ApiExtensions
 {
     public static void RegisterServices(this WebApplicationBuilder builder)
     {
-        builder.Services
-            
-            .AddEndpointsApiExplorer()
-            
-            .AddSwaggerGen()
-            
-            .AddDbContext<SocialDbContext>(options =>
-                options.UseNpgsql(
-                    builder.Configuration.GetConnectionString("Default")))
-            
-            .AddScoped<IPostRepository, PostRepository>()
-            
-            .AddScoped<IBlobStorageHelper, BlobStorageHelper>()
-            
-            .AddAntiforgery()
-            
-            .AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("BlobStorage")));
+        builder.Services.AddEndpointsApiExplorer();
+
+        builder.Services.AddSwaggerGen();
+
+        builder.Services.AddDbContext<SocialDbContext>(options =>
+                options.UseSqlServer(
+                    builder.Configuration.GetConnectionString("Default")));
+
+        builder.Services.AddScoped<IPostRepository, PostRepository>();
+
+        builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+        builder.Services.AddScoped<IBlobStorageHelper, BlobStorageHelper>();
+
+        builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("BlobStorage")));        
+
+        builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
+            .AddCookie(IdentityConstants.ApplicationScheme);
+
+        builder.Services.AddAuthorization();
+
+        builder.Services.AddIdentityCore<User>()
+            .AddEntityFrameworkStores<SocialDbContext>()
+            .AddApiEndpoints();      
+
+        builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("BlobStorage")));
 
         builder.Services.AddMediatR(assembly =>
         {
@@ -39,9 +50,9 @@ public static class ApiExtensions
                 .RegisterServicesFromAssemblies(typeof(GetPostById).Assembly)
                 .RegisterServicesFromAssemblies(typeof(DeletePost).Assembly)
                 .RegisterServicesFromAssemblies(typeof(UpdatePost).Assembly)
-                .RegisterServicesFromAssemblies(typeof(CreatePost2).Assembly)
-                .RegisterServicesFromAssemblies(typeof(GetAllPosts2).Assembly);
+                .RegisterServicesFromAssemblies(typeof(GetAllPosts).Assembly);
         });
+
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowAll", builder =>

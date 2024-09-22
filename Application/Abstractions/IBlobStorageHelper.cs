@@ -6,7 +6,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure;
+namespace Application.Abstractions;
 public interface IBlobStorageHelper
 {
     Task<Guid> UploadAsync(IFormFile media, string contentType, CancellationToken cancellationToken = default);
@@ -15,4 +15,4 @@ public interface IBlobStorageHelper
 
     Task DeleteAsync(Guid fileId, CancellationToken cancellationToken = default);
 }
-public record FileResponse(Stream stream, string contentType);
+public record FileResponse(Stream Stream, string ContentType);

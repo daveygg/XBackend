@@ -1,15 +1,14 @@
-﻿using Application.Abstractions;
-using Application.Posts.Commands;
-using Domain.Models;
+﻿using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+using Application.Abstractions;
 
-namespace DataAccess.Repositories;
+namespace Infrastructure.Repositories;
 public class PostRepository : IPostRepository
 {
     private readonly SocialDbContext _ctx;
-    //create transient fault handler
     private readonly RetryPolicy _retryHandler = new RetryPolicy<SqlDatabaseTransientErrorDetectionStrategy>(RetryStrategy.DefaultExponential);
+
     public PostRepository(SocialDbContext ctx)
     {
         _ctx = ctx;
@@ -25,11 +24,7 @@ public class PostRepository : IPostRepository
     }
     public async Task<Post> CreatePost(Post toCreate)
     {
-        return await _retryHandler.ExecuteAsync<Post>(() => _CreatePost(toCreate));
-    }
-    public async Task<Post2> CreatePost2(Post2 toCreate)
-    {
-        return await _CreatePost2(toCreate);
+        return await _CreatePost(toCreate);
     }
     public async Task<Post> GetPostById(int postId)
     {
@@ -39,10 +34,11 @@ public class PostRepository : IPostRepository
     {
         return await _retryHandler.ExecuteAsync<ICollection<Post>>(_GetAllPosts);
     }
-    public async Task<ICollection<Post2>> GetAllPosts2()
+
+    public async Task DeleteAllPosts()
     {
-        return await _retryHandler.ExecuteAsync<ICollection<Post2>>(_GetAllPosts2);
-    }    
+        await _retryHandler.ExecuteAsync(_DeleteAllPosts);
+    }
 
     private async Task<Post> _GetPostById(int postId)
     {
@@ -56,14 +52,6 @@ public class PostRepository : IPostRepository
         await _ctx.SaveChangesAsync();
         return toCreate;
     }
-    private async Task<Post2> _CreatePost2(Post2 toCreate)
-    {
-        toCreate.DateCreated = DateTime.Now;
-        toCreate.LastModified = DateTime.Now;
-        _ctx.Posts2.Add(toCreate);
-        await _ctx.SaveChangesAsync();
-        return toCreate;
-    }
     private async Task _DeletePost(int postId)
     {
         var post = await _ctx.Posts
@@ -71,17 +59,11 @@ public class PostRepository : IPostRepository
         if (post == null) return;        
         _ctx.Posts.Remove(post);
         await _ctx.SaveChangesAsync();
-    } 
+    }
     private async Task<ICollection<Post>> _GetAllPosts()
     {
         return await _ctx.Posts.ToListAsync();
     }
-
-    private async Task<ICollection<Post2>> _GetAllPosts2()
-    {
-        return await _ctx.Posts2.ToListAsync();
-    }
-
     private async Task<Post> _UpdatePost(string updatedContent, int postId)
     {
         var post = await _ctx.Posts.FirstOrDefaultAsync(p => p.Id == postId);
@@ -89,5 +71,15 @@ public class PostRepository : IPostRepository
         post.Content = updatedContent;
         await _ctx.SaveChangesAsync();
         return post;
-    }        
+    }    
+
+    private async Task _DeleteAllPosts()
+    {
+        var posts = await _ctx.Posts.ToListAsync();
+        foreach (var post in posts)
+        {
+            _ctx.Remove(post);
+        }
+        await _ctx.SaveChangesAsync();
+    }
 }

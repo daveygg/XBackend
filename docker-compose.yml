@@ -25,14 +25,14 @@ services:
       - ./.containers/blob_storage/data:/data
     command: "azurite-blob --blobPort 10010 --blobHost 0.0.0.0 -l /data"
 
-  api.database:
-    image: postgres:latest
-    container_name: api.database
-    environment: 
-      - POSTGRES_DB=posts
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    volumes:
-      - ./.containers/posts-db:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+  # api.database:
+  #   image: postgres:latest
+  #   container_name: api.database
+  #   environment: 
+  #     - POSTGRES_DB=posts
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=postgres
+  #   volumes:
+  #     - ./.containers/posts-db:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"

@@ -1,8 +1,9 @@
-﻿using Application.Posts.Commands;
+﻿using Application.Abstractions;
+using Application.Posts.Commands;
 using Application.Posts.Queries;
+using Application.Users.Queries;
 using Domain.Models;
 using MediatR;
-using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
 using MinimalApi.Abstractions;
 using MinimalApi.Filters;
@@ -14,13 +15,14 @@ public class PostEndpointDefinition : IEndpointDefinition
     public void RegisterEndpoints(WebApplication app)
     {
         var posts = app.MapGroup("/api/posts");
-        var posts2 = app.MapGroup("/api/posts2");
+        var files = app.MapGroup("/api/files");
+        var users = app.MapGroup("/api/users");
 
         posts.MapGet("/{id}", GetPostById)
             .WithName("GetPostById");
         posts.MapPost("/", CreatePost)
             .WithName("CreatePost")
-            .AddEndpointFilter<PostValidationFilter>();
+            .DisableAntiforgery();
         posts.MapGet("/", GetAllPosts)
             .WithName("GetAllPosts");
         posts.MapPut("/{id}", UpdatePost)
@@ -29,13 +31,21 @@ public class PostEndpointDefinition : IEndpointDefinition
         posts.MapDelete("/{id}", DeletePost)
             .WithName("DeletePost");
 
-        posts2.MapPost("/", CreatePost2)
-            .WithName("CreatePost2")
-            .DisableAntiforgery();
-        posts2.MapGet("/", GetAllPosts2)
-            .WithName("GetAllPosts2");
-        
+        files.MapGet("/{id}", GetFileById)
+            .WithName("GetFileById");
+
+        users.MapGet("/{id}", GetUserById)
+            .WithName("GetUserById");
     }
+
+    private async Task<IResult>GetFileById(IMediator mediator,
+        IBlobStorageHelper blobStorageHelper,
+        Guid id)
+    {
+        FileResponse fileResponse = await blobStorageHelper.DownloadAsync(id);
+        return Results.File(fileResponse.Stream, fileResponse.ContentType);
+    }
+
     private async Task<IResult> GetPostById(IMediator mediator, int id)
     {
         var getPost = new GetPostById { PostId = id };
@@ -43,18 +53,11 @@ public class PostEndpointDefinition : IEndpointDefinition
         return Results.Ok(post);
     }
 
-    private async Task<IResult> CreatePost(IMediator mediator, Post post)
+    private async Task<IResult> GetUserById(IMediator mediator, string id)
     {
-        var createPost = new CreatePost { PostContent = post.Content };
-        var createdPost = await mediator.Send(createPost);
-        return Results.CreatedAtRoute("GetPostById", new { createdPost.Id }, createdPost);
-    }
-
-    private async Task<IResult> GetAllPosts(IMediator mediator)
-    {
-        var getAllPosts = new GetAllPosts();
-        var posts = await mediator.Send(getAllPosts);
-        return TypedResults.Ok(posts);
+        var getUser = new GetUserById { UserId = id };
+        var user = await mediator.Send(getUser);
+        return Results.Ok(user);
     }
 
     private async Task<IResult> UpdatePost(IMediator mediator, Post post, int id)
@@ -70,21 +73,22 @@ public class PostEndpointDefinition : IEndpointDefinition
         await mediator.Send(deletePost);
         return TypedResults.NoContent();
     }
-    private async Task<IResult> CreatePost2(IMediator mediator, [FromForm]Post2 post, IFormFile media)
+
+    private async Task<IResult> CreatePost(IMediator mediator, [FromForm]string? content, IFormFile? media)
     {
-        var createPost = new CreatePost2
+        var createPost = new CreatePost
         {
-            PostContent = post.Content,
+            PostContent = content,
             Media = media
         };
         var createdPost = await mediator.Send(createPost);
-        return Results.CreatedAtRoute("GetPostById", new { createdPost.Id }, createdPost);
+        return Results.CreatedAtRoute("GetPostById", new { createdPost.Id }, createdPost);               
     }
 
-    private async Task<IResult> GetAllPosts2(IMediator mediator)
+    private async Task<IResult> GetAllPosts(IMediator mediator)
     {
-        var getAllPosts2 = new GetAllPosts2();
-        var posts = await mediator.Send(getAllPosts2);
+        var getAllPosts = new GetAllPosts();
+        var posts = await mediator.Send(getAllPosts);
         return TypedResults.Ok(posts);
     }
 }

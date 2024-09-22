@@ -2,14 +2,9 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Application.Abstractions;
 
-namespace Infrastructure;
+namespace Infrastructure.BlobStorage;
 public sealed class BlobStorageHelper(BlobServiceClient blobServiceClient) : IBlobStorageHelper
 {
     private const string ContainerName = "images";
@@ -38,12 +33,14 @@ public sealed class BlobStorageHelper(BlobServiceClient blobServiceClient) : IBl
         Guid fileId = Guid.NewGuid();
 
         BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(ContainerName);
-        BlobClient blobClient = containerClient.GetBlobClient(fileId.ToString());        
+        BlobClient blobClient = containerClient.GetBlobClient(fileId.ToString());
+
 
         await blobClient.UploadAsync(
-            stream,
-            new BlobHttpHeaders { ContentType = contentType },
-            cancellationToken: cancellationToken);
+        stream,
+        new BlobHttpHeaders { ContentType = contentType },
+        cancellationToken: cancellationToken);
+
 
         return fileId;
     }
