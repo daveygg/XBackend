@@ -16,8 +16,6 @@ app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 app.UseOptions();
 
-//AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -25,8 +23,12 @@ if (app.Environment.IsDevelopment())
     app.ApplyMigrations();
 }
 
+app.UseAuthentication();
+
+app.UseAuthorization();
+
 app.RegisterEndpointDefinitions();
 
-app.MapIdentityApi<User>();
+//app.MapIdentityApi<User>();
 
 app.Run();

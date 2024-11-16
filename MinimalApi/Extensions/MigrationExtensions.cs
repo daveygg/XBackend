@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Infrastructure;
 
 namespace MinimalApi.Extensions;
@@ -10,8 +9,7 @@ public static class MigrationExtensions
     {
         using IServiceScope scope = app.ApplicationServices.CreateScope();
 
-        using SocialDbContext dbContext =
-            scope.ServiceProvider.GetRequiredService<SocialDbContext>();
+        using SocialDbContext dbContext = scope.ServiceProvider.GetRequiredService<SocialDbContext>();
 
         dbContext.Database.Migrate();
     }

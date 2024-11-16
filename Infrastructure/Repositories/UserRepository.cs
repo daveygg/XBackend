@@ -16,12 +16,12 @@ public class UserRepository : IUserRepository
     {
         _ctx = ctx;
     }
-    public async Task<User> GetUserByEmail(string email)
+    public async Task<User?> GetUserByEmail(string email)
     {
         return await _ctx.Users.FirstOrDefaultAsync(u => u.Email == email);
     }
 
-    public async Task<User> GetUserById(string id)
+    public async Task<User?> GetUserById(string id)
     {
         return await _ctx.Users.FirstOrDefaultAsync(p => p.Id == id);
     }

@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Application.Users.QueryHandlers;
-public class GetUserByIdHandler : IRequestHandler<GetUserById, User>
+public class GetUserByIdHandler : IRequestHandler<GetUserById, User?>
 {
     private IUserRepository _userRepo;
 
@@ -18,7 +18,7 @@ public class GetUserByIdHandler : IRequestHandler<GetUserById, User>
     {
         _userRepo = userRepo;
     }
-    public async Task<User> Handle(GetUserById request, CancellationToken cancellationToken)
+    public async Task<User?> Handle(GetUserById request, CancellationToken cancellationToken)
     {
         return await _userRepo.GetUserById(request.UserId);
     }

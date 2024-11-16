@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Identity;
 using Domain.Models;
 using Infrastructure.BlobStorage;
 using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace MinimalApi.Extensions;
 
@@ -30,16 +32,42 @@ public static class ApiExtensions
 
         builder.Services.AddScoped<IBlobStorageHelper, BlobStorageHelper>();
 
-        builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("BlobStorage")));        
-
-        builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
-            .AddCookie(IdentityConstants.ApplicationScheme);
-
+        builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("BlobStorage")));
+        
         builder.Services.AddAuthorization();
 
-        builder.Services.AddIdentityCore<User>()
-            .AddEntityFrameworkStores<SocialDbContext>()
-            .AddApiEndpoints();      
+        builder.Services.AddIdentity<User, IdentityRole>(options =>
+        {
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequiredLength = 1;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireDigit = false;
+        })
+        .AddEntityFrameworkStores<SocialDbContext>();
+
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme =
+            options.DefaultChallengeScheme =
+            options.DefaultForbidScheme =
+            options.DefaultScheme =
+            options.DefaultSignInScheme =
+            options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
+
+        })
+        .AddJwtBearer(options => {            
+            options.TokenValidationParameters = new TokenValidationParameters()
+            {
+                ValidateIssuer = true,
+                ValidIssuer = builder.Configuration["JWT:Issuer"],
+                ValidateAudience = true,
+                ValidAudience = builder.Configuration["JWT:Audience"],
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"])
+                )
+            };
+        });
 
         builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("BlobStorage")));
 

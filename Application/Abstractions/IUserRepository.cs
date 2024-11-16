@@ -8,6 +8,6 @@ using System.Threading.Tasks;
 namespace Application.Abstractions;
 public interface IUserRepository
 {
-    Task<User> GetUserById(string id);
-    Task<User> GetUserByEmail(string email);
+    Task<User?> GetUserById(string id);
+    Task<User?> GetUserByEmail(string email);
 }
