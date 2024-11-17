@@ -20,8 +20,10 @@ public class UserEndpointDefinition : IEndpointDefinition
         
         users.MapGet("/{id}", GetUserById)
             .WithName("GetUserById");
-        users.MapPost("/", RegisterUser)
+        users.MapPost("/register", RegisterUser)
             .WithName("RegisterUser");
+        users.MapPost("/login", Login)
+            .WithName("LoginUser");
     }
     
     private async Task<IResult> GetUserById(IMediator mediator,
@@ -40,11 +42,30 @@ public class UserEndpointDefinition : IEndpointDefinition
         }
     }
 
-    private async Task<IResult> RegisterUser(IMediator mediator,
-        string email,
+    private async Task<IResult> Login(IMediator mediator,
+        string username,
         string password)
     {
-        var registerUser = new RegisterUser { Email = email, Password = password };
+        var signInUser = new SignInUser
+        {
+            Username = username,
+            Password = password
+        };
+        var jwtResult = await mediator.Send(signInUser);
+
+        return TypedResults.Ok(jwtResult);
+    }
+    private async Task<IResult> RegisterUser(IMediator mediator,
+        string email,
+        string password,
+        string username)
+    {
+        var registerUser = new RegisterUser
+        {
+            Email = email,
+            Password = password,
+            Username = username
+        };
         await mediator.Send(registerUser);
         return TypedResults.Ok();
     }

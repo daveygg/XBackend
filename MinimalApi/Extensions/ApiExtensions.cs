@@ -11,6 +11,8 @@ using Infrastructure.BlobStorage;
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Infrastructure.JWTService;
+using Microsoft.OpenApi.Models;
 
 namespace MinimalApi.Extensions;
 
@@ -20,11 +22,38 @@ public static class ApiExtensions
     {
         builder.Services.AddEndpointsApiExplorer();
 
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(option =>
+        {
+            option.SwaggerDoc("v1", new OpenApiInfo { Title = "XBackend", Version = "v1" });
+            option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Description = "Please enter a valid token",
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                BearerFormat = "JWT",
+                Scheme = "Bearer"
+            });
+            option.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type=ReferenceType.SecurityScheme,
+                            Id="Bearer"
+                        }
+                    },
+                    new string[]{}
+                }
+            });
+        });
+
+
 
         builder.Services.AddDbContext<SocialDbContext>(options =>
-                options.UseSqlServer(
-                    builder.Configuration.GetConnectionString("Default")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
         builder.Services.AddScoped<IPostRepository, PostRepository>();
 
@@ -32,10 +61,11 @@ public static class ApiExtensions
 
         builder.Services.AddScoped<IBlobStorageHelper, BlobStorageHelper>();
 
-        builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("BlobStorage")));
+        builder.Services.AddScoped<ITokenService, TokenService>();
+
+        builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("BlobStorage")));        
         
         builder.Services.AddAuthorization();
-
         builder.Services.AddIdentity<User, IdentityRole>(options =>
         {
             options.Password.RequireNonAlphanumeric = false;
@@ -64,10 +94,10 @@ public static class ApiExtensions
                 ValidAudience = builder.Configuration["JWT:Audience"],
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(
-                    System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"])
+                    System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"]!)
                 )
             };
-        });
+        });        
 
         builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("BlobStorage")));
 
@@ -96,7 +126,9 @@ public static class ApiExtensions
     {
         var endpointDefinitions = typeof(Program).Assembly
             .GetTypes()
-            .Where(t => t.IsAssignableTo(typeof(IEndpointDefinition)) && !t.IsAbstract && !t.IsInterface)
+            .Where(t => t.IsAssignableTo(typeof(IEndpointDefinition))
+                && !t.IsAbstract
+                && !t.IsInterface)
             .Select(Activator.CreateInstance)
             .Cast<IEndpointDefinition>();
 

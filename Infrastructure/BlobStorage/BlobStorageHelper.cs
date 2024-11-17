@@ -9,7 +9,8 @@ public sealed class BlobStorageHelper(BlobServiceClient blobServiceClient) : IBl
 {
     private const string ContainerName = "images";
 
-    public async Task DeleteAsync(Guid fileId, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(Guid fileId,
+        CancellationToken cancellationToken = default)
     {
         BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(ContainerName);
         BlobClient blobClient = containerClient.GetBlobClient(fileId.ToString());
@@ -17,17 +18,21 @@ public sealed class BlobStorageHelper(BlobServiceClient blobServiceClient) : IBl
         await blobClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
     }
 
-    public async Task<FileResponse> DownloadAsync(Guid fileId, CancellationToken cancellationToken = default)
+    public async Task<FileResponse> DownloadAsync(Guid fileId,
+        CancellationToken cancellationToken = default)
     {
         BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(ContainerName);
         BlobClient blobClient = containerClient.GetBlobClient(fileId.ToString());
 
         var response = await blobClient.DownloadContentAsync(cancellationToken: cancellationToken);
 
-        return new FileResponse(response.Value.Content.ToStream(), response.Value.Details.ContentType);
+        return new FileResponse(response.Value.Content.ToStream(),
+            response.Value.Details.ContentType);
     }
 
-    public async Task<Guid> UploadAsync(IFormFile media, string contentType, CancellationToken cancellationToken = default)
+    public async Task<Guid> UploadAsync(IFormFile media,
+        string contentType,
+        CancellationToken cancellationToken = default)
     {
         Stream stream = media.OpenReadStream();
         Guid fileId = Guid.NewGuid();
@@ -36,10 +41,9 @@ public sealed class BlobStorageHelper(BlobServiceClient blobServiceClient) : IBl
         BlobClient blobClient = containerClient.GetBlobClient(fileId.ToString());
 
 
-        await blobClient.UploadAsync(
-        stream,
-        new BlobHttpHeaders { ContentType = contentType },
-        cancellationToken: cancellationToken);
+        await blobClient.UploadAsync(stream,
+            new BlobHttpHeaders { ContentType = contentType },
+            cancellationToken: cancellationToken);
 
 
         return fileId;
