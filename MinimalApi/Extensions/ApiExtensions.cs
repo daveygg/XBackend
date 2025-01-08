@@ -22,44 +22,59 @@ public static class ApiExtensions
     {
         builder.Services.AddEndpointsApiExplorer();
 
-        builder.Services.AddSwaggerGen(option =>
-        {
-            option.SwaggerDoc("v1", new OpenApiInfo { Title = "XBackend", Version = "v1" });
-            option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                In = ParameterLocation.Header,
-                Description = "Please enter a valid token",
-                Name = "Authorization",
-                Type = SecuritySchemeType.Http,
-                BearerFormat = "JWT",
-                Scheme = "Bearer"
-            });
-            option.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type=ReferenceType.SecurityScheme,
-                            Id="Bearer"
-                        }
-                    },
-                    new string[]{}
-                }
-            });
-        });
+        builder.Services.AddSwaggerGen();
+
+        //builder.Services.AddSwaggerGen(option =>
+        //{
+        //    option.SwaggerDoc("v1", new OpenApiInfo { Title = "XBackend", Version = "v1" });
+        //    option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        //    {
+        //        In = ParameterLocation.Header,
+        //        Description = "Please enter a valid token",
+        //        Name = "Authorization",
+        //        Type = SecuritySchemeType.Http,
+        //        BearerFormat = "JWT",
+        //        Scheme = "Bearer"
+        //    });
+        //    option.AddSecurityRequirement(new OpenApiSecurityRequirement
+        //    {
+        //        {
+        //            new OpenApiSecurityScheme
+        //            {
+        //                Reference = new OpenApiReference
+        //                {
+        //                    Type=ReferenceType.SecurityScheme,
+        //                    Id="Bearer"
+        //                }
+        //            },
+        //            new string[]{}
+        //        }
+        //    });
+        //});
 
 
 
         builder.Services.AddDbContext<SocialDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
+        var blobStorageType = builder.Configuration["BlobStorageType"];
+        
+        switch (blobStorageType)
+        {
+            case "Local":
+                builder.Services.AddScoped<IBlobStorageHelper, LocalStorageHelper>();
+                break;
+            case "Azure":
+                builder.Services.AddScoped<IBlobStorageHelper, BlobStorageHelper>();
+                break;
+            default:
+                builder.Services.AddScoped<IBlobStorageHelper, BlobStorageHelper>();
+            break;
+        }
+
         builder.Services.AddScoped<IPostRepository, PostRepository>();
 
-        builder.Services.AddScoped<IUserRepository, UserRepository>();
-
-        builder.Services.AddScoped<IBlobStorageHelper, BlobStorageHelper>();
+        builder.Services.AddScoped<IUserRepository, UserRepository>();        
 
         builder.Services.AddScoped<ITokenService, TokenService>();
 

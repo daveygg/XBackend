@@ -17,6 +17,9 @@ public class CreatePostHandler : IRequestHandler<CreatePost, Post>
     {        
         var newPost = new Post
         {
+            AvatarUrl = request.AvatarUrl,
+            UserName = request.UserName,
+            DisplayName = request.DisplayName,
             Content = request.PostContent,
             DateCreated = DateTime.Now,
             LastModified = DateTime.Now

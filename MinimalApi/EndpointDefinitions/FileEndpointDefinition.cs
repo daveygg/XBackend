@@ -16,8 +16,8 @@ public class FileEndpointDefinition : IEndpointDefinition
 {
     public void RegisterEndpoints(WebApplication app)
     {
-        var files = app.MapGroup("/api/files")
-            .RequireAuthorization();
+        var files = app.MapGroup("/api/files");
+            //.RequireAuthorization();
 
         files.MapGet("/{id}", GetFileById)
             .WithName("GetFileById");

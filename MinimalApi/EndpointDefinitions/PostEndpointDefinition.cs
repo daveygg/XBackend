@@ -16,8 +16,8 @@ public class PostEndpointDefinition : IEndpointDefinition
 {
     public void RegisterEndpoints(WebApplication app)
     {
-        var posts = app.MapGroup("/api/posts")
-            .RequireAuthorization();
+        var posts = app.MapGroup("/api/posts");
+            //.RequireAuthorization();
 
         posts.MapGet("/{id}", GetPostById)
             .WithName("GetPostById");
