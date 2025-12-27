@@ -42,4 +42,66 @@ public class TokenService : ITokenService
 
         return tokenHandler.WriteToken(token);
     }
+
+    public IEnumerable<Claim> ExtractClaimsFromToken(string token)
+    {
+        try
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtToken = tokenHandler.ReadJwtToken(token);
+
+            return jwtToken.Claims;
+        }
+        catch (Exception)
+        {
+            // Handle invalid token or parsing errors
+            return null;
+        }
+    }
+
+    public string ExtractClaimValueFromToken(string token, string claimType)
+    {
+        try
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtToken = tokenHandler.ReadJwtToken(token);
+
+            return jwtToken.Claims.FirstOrDefault(c => c.Type == claimType)?.Value;
+        }
+        catch (Exception)
+        {
+            // Handle invalid token or parsing errors
+            return null;
+        }
+    }
+    public ClaimsPrincipal GetClaimsPrincipal(string token)
+    {
+        try
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:SigningKey"]!)),
+                ValidateIssuer = true,
+                ValidIssuer = _configuration["JWT:Issuer"],
+                ValidateAudience = true,
+                ValidAudience = _configuration["JWT:Audience"],
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+
+            return tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+        }
+        catch (SecurityTokenException)
+        {
+            // Handle invalid token
+            return null; // Or throw an exception, depending on your needs.
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+
+    }
 }

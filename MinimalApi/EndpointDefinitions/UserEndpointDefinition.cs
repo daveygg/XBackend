@@ -24,6 +24,8 @@ public class UserEndpointDefinition : IEndpointDefinition
             .WithName("RegisterUser");
         users.MapPost("/login", Login)
             .WithName("LoginUser");
+        users.MapPost("AddProfilePicture", AddProfilePicture)
+            .WithName("AddProfilePicture");
     }
     
     private async Task<IResult> GetUserById(IMediator mediator,
@@ -67,6 +69,18 @@ public class UserEndpointDefinition : IEndpointDefinition
             Username = username
         };
         await mediator.Send(registerUser);
+        return TypedResults.Ok();
+    }
+    private async Task<IResult> AddProfilePicture(IMediator mediator,
+        IFormFile media,
+        string token)
+    {
+        var addProfilePicture = new AddProfilePicture
+        {
+            ProfilePicture = media,
+            Token = token
+        };
+        await mediator.Send(addProfilePicture);
         return TypedResults.Ok();
     }
 }
